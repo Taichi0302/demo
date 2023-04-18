@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>APU講義評価アプリ</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #b4131d;
+		}
+
+		.container {
+			margin: 0 auto;
+			width: 80%;
+			max-width: 800px;
+			padding: 20px;
+			background-color: #fff;
+			box-shadow: 0 2px 5px #5e5e5e;
+		}
+
+		h1 {
+			text-align: center;
+		}
+
+		h3 {
+			margin-top: 40px;
+		}
+
+		form {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			margin-top: 20px;
+		}
+
+		form label {
+			margin: 10px;
+		}
+
+		form input,
+		form select {
+			padding: 10px;
+			font-size: 16px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			width: 100%;
+			max-width: 400px;
+			margin-top: 5px;
+			margin-bottom: 10px;
+		}
+
+		form textarea {
+			padding: 10px;
+			font-size: 16px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			width: 100%;
+			max-width: 400px;
+			height: 150px;
+			margin-top: 5px;
+			margin-bottom: 10px;
+		}
+
+		form button {
+			padding: 10px 20px;
+			background-color: #4CAF50;
+			color: #fff;
+			border: none;
+			border-radius: 5px;
+			font-size: 16px;
+			cursor: pointer;
+		}
+
+		.error {
+			color: red;
+			font-size: 16px;
+			margin-top: 5px;
+			margin-bottom: 10px;
+		}
+
+		.success {
+			color: green;
+			font-size: 16px;
+			margin-top: 5px;
+			margin-bottom: 10px;
+		}
+
+		.reviews {
+			margin-top: 50px;
+			background-color: #f0f0ff;
+			padding: 20px;
+			border-radius: 5px;
+			box-shadow: 0 2px 5px #ccc;
+		}
+
+		.review {
+			padding: 10px;
+			margin: 10px 0;
+			background-color: #fff;
+			border-radius: 5px;
+		}
+
+		.review p {
+			margin: 5px 0;
+			font-size: 16px;
+			font-weight: bold;
+		}
+
+		.review .timestamp {
+			font-size: 14px;
+			color: #666;
+		}
+
+		.review .category {
+			margin-left: 10px;
+			padding: 5px;
+			color: #fff;
+			border-radius: 5px;
+		}
+
+		.easy {
+			background-color: #4CAF50;
+		}
+
+		.professional {
+			background-color: #2196F3;
+		}
+
+		.recommended {
+			background-color: #FF5722;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>APU講義評価アプリ</h1>
+
+		<form id="review-form">
+			<label for="lecture-name">講義名</label>
+			<input type="text" id="lecture-name" name="lecture-name" required>
+
+			<label for="professor">担当教授名</label>
+			<input type="text" id="professor" name="professor" required>
+
+			<label for="easy-rating">楽単度</label>
+			<select id="easy-rating" name="easy-rating" required>
+				<option value="">選択してください</option>
+				<option value="1">1 - 難しい</option>
+				<option value="2">2 - やや難しい</option>
+				<option value="3">3 - 普通</option>
+				<option value="4">4 - やや易しい</option>
+				<option value="5">5 - 易しい</option>
+			</select>
+
+			<label for="professional-rating">専門性</label>
+			<select id="professional-rating" name="professional-rating" required>
+				<option value="">選択してください</option>
+				<option value="1">1 - 全く理解できない</option>
+				<option value="2">2 - あまり理解できない</option>
+				<option value="3">3 - 理解できた</option>
+				<option value="4">4 - かなり理解できた</option>
+				<option value="5">5 - 完全に理解できた</option>
+			</select>
+
+			<label for="recommended-rating">おすすめ度</label>
+			<select id="recommended-rating" name="recommended-rating" required>
+				<option value="">選択してください</option>
+				<option value="1">1 - 全くおすすめできない</option>
+				<option value="2">2 - あまりおすすめできない</option>
+				<option value="3">3 - まあおすすめできる</option>
+				<option value="4">4 - かなりおすすめできる</option>
+				<option value="5">5 - 必ずおすすめしたい</option>
+			</select>
+
+			<button type="submit">評価を投稿する</button>
+
+			<div id="error-message" class="error"></div>
+			<div id="success-message" class="success"></div>
+		</form>
+
+		<div class="reviews">
+			<h3>投稿された評価</h3>
+			<div id="review-list"></div>
+		</div>
+	</div>
+
+	<script>
+		// 投稿されたデータを保存するための配列
+		let reviews = [];
+
+		// フォームの送信イベントに対する処理
+		document.querySelector("#review-form").addEventListener("submit", function(event) {
+			// デフォルトの送信処理を無効にする
+			event.preventDefault();
+
+			// 入力された値を取得する
+			let lectureName = document.querySelector("#lecture-name").value;
+			let professor = document.querySelector("#professor").value;
+			let easyRating = document.querySelector("#easy-rating").value;
+			let professionalRating = document.querySelector("#professional-rating").value;
+			let recommendedRating = document.querySelector("#recommended-rating").value;
+
+			// 入力値のエラーチェック
+			if (lectureName === "" || professor === "" || easyRating === "" || professionalRating === "" || recommendedRating === "") {
+				document.querySelector("#error-message").textContent = "すべての項目を入力してください。";
+				return;
+			} else if (isNaN(easyRating) || isNaN(professionalRating) || isNaN(recommendedRating)) {
+				document.querySelector("#error-message").textContent = "評価は数字で入力してください。";
+				return;
+			} else if (easyRating < 1 || easyRating > 5 || professionalRating < 1 || professionalRating > 5 || recommendedRating < 1 || recommendedRating > 5) {
+				document.querySelector("#error-message").textContent = "評価は1から5の範囲で入力してください。";
+				return;
+			}
+
+			// 日付を取得する
+			let date = new Date();
+
+			// 投稿された評価を保存するオブジェクトを作成する
+			let review = {
+				lectureName: lectureName,
+				professor: professor,
+				easyRating: Number(easyRating),
+				professionalRating: Number(professionalRating),
+				recommendedRating: Number(recommendedRating),
+				date: date
+			};
+
+			// 投稿された評価を配列に追加する
+			reviews.push(review);
+
+			// 成功メッセージを表示する
+			document.querySelector("#success-message").textContent = "評価を投稿しました。";
+
+			// エラーメッセージをクリアする
+			document.querySelector("#error-message").textContent = "";
+
+			// 投稿された評価を表示する
+			showReviews();
+		});
+
+		// 投稿された評価を表示する関数
+		function showReviews() {
+			// 評価リストのHTML要素を取得する
+			let reviewList = document.querySelector("#review-list");
+
+			// 評価リストをクリアする
+			reviewList.innerHTML = "";
+
+			// 投稿された評価を表示する
+			for (let i = 0; i < reviews.length; i++) {
+				let review = reviews[i];
+
+				// 日付を整形する
+				let month = review.date.getMonth() + 1;
+				let day = review.date.getDate();
+				let year = review.date.getFullYear();
+				let hours = review.date.getHours();
+				let minutes = review.date.getMinutes();
+				let seconds = review.date.getSeconds();
+				let timestamp = `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+
+				// カテゴリーごとの色を決定する
+				let categoryClass = "";
+				if (review.easyRating >= 4) {
+					categoryClass = "easy";
+				} else if (review.professionalRating >= 4) {
+					categoryClass = "professional";
+				} else if (review.recommendedRating >= 4) {
+					categoryClass = "recommended";
+				}
+
+				// 評価を表示するHTML要素を生成する
+				let reviewElement = document.createElement("div");
+				reviewElement.classList.add("review");
+				reviewElement.innerHTML = `
+					<p>${review.lectureName} - ${review.professor} <span class="timestamp">${timestamp}</span></p>
+					<div class="category ${categoryClass}">楽単:${review.easyRating} 専門性:${review.professionalRating} おすすめ:${review.recommendedRating}</div>
+				`;
+
+				// 評価リストに評価を追加する
+				reviewList.appendChild(reviewElement);
+			}
+		}
+	</script>
+</body>
+</html>
